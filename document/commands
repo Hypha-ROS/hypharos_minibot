@@ -1,0 +1,2 @@
+## Create pkg
+$ catkin_create_pkg hypharos_minibot rospy roscpp std_msgs geometry_msgs move_base tf visualization_msgs costmap_2d dynamic_reconfigure message_generation

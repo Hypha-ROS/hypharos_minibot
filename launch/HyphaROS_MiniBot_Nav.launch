@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- ********************** -->
+    <!-- Launch file parameters -->
+    <!-- ********************** -->
+    <!-- general -->
+    <arg name="use_rviz"    default="false" />
+    <arg name="multi_goals" default="false" />
+
+    <!-- for nav -->
+    <arg name="use_dwa"  default="true" /> 
+
+    <!-- for base -->
+    <arg name="wheel_separation" default="0.158" /> <!-- unit: meter -->
+    <arg name="wheel_radius"     default="0.032" /> <!-- unit: meter -->   
+    <arg name="use_imu"          default="false" />
+
+    <!-- for amcl -->    
+    <arg name="init_x" default="0.0" />
+    <arg name="init_y" default="0.0" />
+    <arg name="init_a" default="0.0" />
+
+
+    <!-- ********************** -->
+    <!-- Boot up all components -->
+    <!-- ********************** -->
+    <include file="$(find hypharos_minibot)/launch/includes/HyphaROS_MiniBot_Drivers.launch.xml">
+        <arg name="wheel_separation" value="$(arg wheel_separation)" /> 
+        <arg name="wheel_radius"     value="$(arg wheel_radius)" />
+        <arg name="use_imu"          value="$(arg use_imu)" />
+    </include>
+
+
+    <!-- ************ -->
+    <!-- Localization -->
+    <!-- ************ -->
+    <!-- Map server (for amcl) -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find hypharos_minibot)/map/map_amcl.yaml">
+        <remap from="map" to="map_amcl"/>
+    </node>
+    <!-- Map server (for nav)-->
+    <node name="map_server_nav" pkg="map_server" type="map_server" args="$(find hypharos_minibot)/map/map_nav.yaml"/>
+
+    <!-- amcl -->
+    <include file="$(find hypharos_minibot)/launch/includes/minibot_amcl.launch.xml">
+        <arg name="init_x" value="$(arg init_x)"/>
+        <arg name="init_y" value="$(arg init_y)"/>
+        <arg name="init_a" value="$(arg init_a)"/>
+    </include>
+
+
+    <!-- ********************** -->
+    <!-- Navigation (move_base) -->
+    <!-- ********************** -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" >
+        <!-- global planner -->
+        <param name="use_dijkstra" value="true" />
+        <!-- local planner -->   
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" if="$(arg use_dwa)"/>      
+        <rosparam file="$(find hypharos_minibot)/param/dwa_local_planner_params.yaml" command="load" if="$(arg use_dwa)"/>
+        <rosparam file="$(find hypharos_minibot)/param/base_local_planner_params.yaml" command="load" unless="$(arg use_dwa)" />         
+        <!-- params for move_base -->
+        <param name="planner_frequency" value="0.3" />
+        <param name="controller_frequency" value="10.0" />
+        <param name="controller_patience" value="3.0" />
+        <param name="oscillation_timeout" value="5.0" />
+        <param name="oscillation_distance" value="0.1" />
+        <param name="clearing_rotation_allowed" value="false" />
+        <!-- params for costmap layers --> 
+        <rosparam file="$(find hypharos_minibot)/param/local_costmap_params.yaml" command="load"/>
+        <rosparam file="$(find hypharos_minibot)/param/global_costmap_params.yaml" command="load"/>
+    </node>
+
+    <!-- *********** -->
+    <!-- Multi Goals -->
+    <!-- *********** -->
+    <node pkg="hypharos_minibot" type="multi_goals.py" respawn="false" name="multi_goals" output="screen" if="$(arg multi_goals)">
+        <!-- params for move_base -->
+        <param name="goalListX" value="[2.0, 1.0]" />
+        <param name="goalListY" value="[2.0, 3.0]" />
+        <param name="map_frame" value="map" />
+    </node>
+
+    <!-- ************* -->
+    <!-- Visualization -->
+    <!-- ************* -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find hypharos_minibot)/rviz_cfg/minibot_amcl.rviz" if="$(arg use_rviz)" />
+</launch>

@@ -1,0 +1,18 @@
+<launch>
+    <!-- global parameter -->
+    <arg name="wheel_separation" default="0.158" /> <!-- unit: meter -->
+    <arg name="wheel_radius"     default="0.032" /> <!-- unit: meter -->  
+    <arg name="odom_topic"       default="/odom" />
+    <arg name="pub_tf"           default="true" /> 
+
+    <node name="base_control"   pkg="hypharos_minibot"  type="base_control.py" output="screen">
+        <param name="port"       value="/dev/stm32base"/>
+        <param name="baudrate"   value="115200"/>   
+        <param name="base_id"    value="base_footprint"/> <!-- base_link name -->
+        <param name="odom_id"    value="odom"/>      <!-- odom link name -->
+        <param name="odom_topic" value="$(arg odom_topic)"/> <!-- topic name -->
+        <param name="pub_tf"     value="$(arg pub_tf)"/>     <!-- publish TF or not -->
+        <param name="wheel_separation" value="$(arg wheel_separation)"/> 
+        <param name="wheel_radius"     value="$(arg wheel_radius)"/> 
+    </node>
+</launch>

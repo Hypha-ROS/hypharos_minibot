@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- Launch file parameters -->
+    <arg name="wheel_separation" default="0.158" /> <!-- unit: meter -->
+    <arg name="wheel_radius"     default="0.032" /> <!-- unit: meter -->   
+    <arg name="use_imu"          default="false" />
+
+    <!-- TF setting -->
+    <include file="$(find hypharos_minibot)/launch/includes/minibot_tf.launch.xml" />
+
+    <!-- YDLidar -->
+    <include file="$(find hypharos_minibot)/launch/includes/minibot_ydlidar.launch.xml" />
+
+    <!-- ODOMETRY -->
+    <group if="$(arg use_imu)">
+        <!-- base control -->
+        <include file="$(find hypharos_minibot)/launch/includes/minibot_base.launch.xml">
+            <arg name="wheel_separation" value="$(arg wheel_separation)"/>
+            <arg name="wheel_radius"     value="$(arg wheel_radius)"/>
+            <arg name="odom_topic"       value="/base_odom" />
+            <arg name="pub_tf"           value="false" />
+        </include>
+        <!-- IMU -->
+        <include file="$(find hypharos_minibot)/launch/includes/minibot_imu.launch.xml" />
+        <!-- Robot_Localization -->
+        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+            <rosparam command="load" file="$(find hypharos_minibot)/param/minibot_imu_ekf_params.yaml" />
+            <remap from="/odometry/filtered" to="/odom" />
+        </node>
+    </group>
+
+    <group unless="$(arg use_imu)">
+        <!-- base control -->
+        <include file="$(find hypharos_minibot)/launch/includes/minibot_base.launch.xml">
+            <arg name="wheel_separation" value="$(arg wheel_separation)"/>
+            <arg name="wheel_radius"     value="$(arg wheel_radius)"/>
+        </include>
+    </group>
+</launch>

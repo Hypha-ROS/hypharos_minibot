@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- global parameter -->
+    <arg name="wheel_separation" default="0.15" /> <!-- unit: meter -->
+    <arg name="wheel_radius" default="0.0335" /> <!-- unit: meter -->   
+
+    <!-- TF setting -->
+    <include file="$(find adlink_ddsbot)/launch/includes/adlink_ddsbot_tf.launch.xml" />
+
+    <!-- SENSOR DEVICE -->
+    <!-- RPLidar -->
+    <include file="$(find adlink_ddsbot)/launch/includes/rplidar.launch.xml" />
+    <!-- IMU -->
+    <include file="$(find adlink_ddsbot)/launch/includes/gy85.launch.xml" />
+    <!-- base control -->
+    <include file="$(find adlink_ddsbot)/launch/includes/adlink_ddsbot_base.launch.xml">
+        <arg name="wheel_separation" value="$(arg wheel_separation)"/>
+        <arg name="wheel_radius" value="$(arg wheel_radius)"/>
+    </include>
+
+</launch>
