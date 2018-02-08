@@ -1,5 +1,5 @@
 # HyphaROS MiniBot pkg
-![alt text](https://github.com/Hypha-ROS/hypharos_minibot/tree/master/document/logo/HyphaROS_logo_2.png)  
+![alt text](https://github.com/Hypha-ROS/hypharos_minibot/blob/master/document/logo/HyphaROS_logo_2.png)  
 
 ## Abstract
 Low cost, user friendly Pi3 based mini robot for ROS developing !   
