@@ -2,18 +2,19 @@
 #parameters available for DWAPlannerROS, please see
 #http://www.ros.org/wiki/dwa_local_planner
 DWAPlannerROS:
-  acc_lim_th: 1.0
-  acc_lim_x: 0.2
+  acc_limit_trans: 1.0
+  acc_lim_theta: 1.0
+  acc_lim_x: 1.0
   acc_lim_y: 0.05
 
-  max_vel_x: 0.5
+  max_vel_x: 2.0
   min_vel_x: -0.05
 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
-  max_trans_vel: 0.5
-  min_trans_vel: 0.01
+  max_trans_vel: 2.0
+  min_trans_vel: 0.05
 
   max_rot_vel: 1.0
   min_rot_vel: 0.01
@@ -22,20 +23,20 @@ DWAPlannerROS:
   sim_granularity: 0.01
 
   goal_distance_bias: 32.0
-  path_distance_bias: 64.0
+  path_distance_bias: 48.0
   occdist_scale: 0.01
 
   stop_time_buffer: 0.2
   oscillation_reset_dist: 0.05
 
-  forward_point_distance: 0.325
+  forward_point_distance: 0.1
 
   scaling_speed: 0.25
   max_scaling_factor: 0.2
 
-  vx_samples: 30
+  vx_samples: 10
   vy_samples: 10
-  vtheta_samples: 20
+  vtheta_samples: 10
 
   xy_goal_tolerance: 0.1 # m
   yaw_goal_tolerance: 0.5 # rad
