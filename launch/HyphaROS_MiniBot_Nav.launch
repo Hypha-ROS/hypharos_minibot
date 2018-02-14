@@ -55,17 +55,18 @@
     <!-- ********************** -->
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" >
         <!-- global planner -->
-        <param name="use_dijkstra" value="true" />
+        <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+        <rosparam file="$(find hypharos_minibot)/param/global_planner_params.yaml" command="load" />
         <!-- local planner -->   
         <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" if="$(arg use_dwa)"/>      
         <rosparam file="$(find hypharos_minibot)/param/dwa_local_planner_params.yaml" command="load" if="$(arg use_dwa)"/>
         <rosparam file="$(find hypharos_minibot)/param/base_local_planner_params.yaml" command="load" unless="$(arg use_dwa)" />         
         <!-- params for move_base -->
-        <param name="planner_frequency" value="0.3" />
+        <param name="planner_frequency" value="0.0" />
         <param name="controller_frequency" value="10.0" />
         <param name="controller_patience" value="3.0" />
-        <param name="oscillation_timeout" value="5.0" />
-        <param name="oscillation_distance" value="0.1" />
+        <param name="oscillation_timeout" value="10.0" />
+        <param name="oscillation_distance" value="0.05" />
         <param name="clearing_rotation_allowed" value="false" />
         <!-- params for costmap layers --> 
         <rosparam file="$(find hypharos_minibot)/param/local_costmap_params.yaml" command="load"/>
