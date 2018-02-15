@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 
 <launch>
+    <!-- Arguments -->
+    <arg name="use_bag" default="true" />
+
+    <!-- bag file -->
+    <node pkg="rosbag" type="play" name="player" output="screen" args="$(find hypharos_minibot)/bag/hypharos_racecar.bag --clock" if="$(arg use_bag)"/>
+
     <!-- MRPT ICP -->
     <!--PARAMETERS-->
     <param name="ini_filename" value="$(find mrpt_icp_slam_2d)/tutorial/icp_slam_demo.ini"/>
