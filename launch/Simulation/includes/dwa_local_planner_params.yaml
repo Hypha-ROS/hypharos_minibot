@@ -2,7 +2,7 @@
 #parameters available for DWAPlannerROS, please see
 #http://www.ros.org/wiki/dwa_local_planner
 DWAPlannerROS:
-  acc_lim_th: 1.2
+  acc_lim_theta: 1.2
   acc_lim_x: 1.5
   acc_lim_y: 1.5
 
@@ -36,8 +36,6 @@ DWAPlannerROS:
   vx_samples: 3
   vy_samples: 10
   vtheta_samples: 20
-
-  sim_period: 0.1
 
   xy_goal_tolerance: 0.1
   yaw_goal_tolerance: 3.14
