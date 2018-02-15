@@ -3,8 +3,8 @@ local_costmap:
     robot_radius: 0.1
     footprint_padding: 0.01
     transform_tolerance: 1.0
-    update_frequency: 10.0
-    publish_frequency: 10.0
+    update_frequency: 4.0
+    publish_frequency: 2.0
 
     global_frame: odom
     robot_base_frame: base_footprint
