@@ -5,6 +5,8 @@
 Low cost, user friendly Pi3 based mini robot for ROS developing !   
 Fully open-sourced (hardware & software), total cost <300USD.  
 
+![alt text](https://drive.google.com/open?id=1Csf0uPHfUZ_SAkWxBnUl-ce7ABnQK2LH)  
+
 ## About us
 FB Page: https://www.facebook.com/HyphaROS/  
 Website: https://hypharosworkshop.wordpress.com/  
@@ -12,7 +14,7 @@ Contact: hypha.ros@gmail.com
 Developer:   
 * HaoChih, LIN  
 
-Date: 2018/02/08  
+Date: 2018/02/18  
 License: Apache 2.0  
 
 ## Features
@@ -47,7 +49,7 @@ will be released soon
 64bit RAM > 4G  
 Install ROS Kinetic - (Desktop-Full Install)   (http://wiki.ros.org/kinetic/Installation/Ubuntu)  
 
-$ sudo apt-get install remmina synaptic gimp git ros-kinetic-navigation ros-kinetic-amcl ros-kinetic-slam-gmapping ros-kinetic-mrpt-slam ros-kinetic-mrpt-icp-slam-2d ros-kinetic-robot_localization -y  
+$ sudo apt-get install remmina synaptic gimp git ros-kinetic-navigation ros-kinetic-amcl ros-kinetic-slam-gmapping ros-kinetic-mrpt-slam ros-kinetic-mrpt-icp-slam-2d ros-kinetic-robot-localization -y  
 
 create your own catkin_ws   
 (http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment#Create_a_ROS_Workspace)  
