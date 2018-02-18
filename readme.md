@@ -33,7 +33,7 @@ License: Apache 2.0
 * YDLidar X4
 * STM32(F103) MCU (with OLED display, bluetooth)
 * Diff Motor with A/B encoder(res: 340)
-* MPU6050 or GY85
+* MPU6050 or GY85  
 Total Cost: < 300 USD  
 
 ## Software
