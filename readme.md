@@ -5,7 +5,7 @@
 Low cost, user friendly Pi3 based mini robot for ROS developing !   
 Fully open-sourced (hardware & software), total cost <300USD.  
 
-![alt text](https://drive.google.com/open?id=1Csf0uPHfUZ_SAkWxBnUl-ce7ABnQK2LH)  
+![alt text](https://github.com/Hypha-ROS/hypharos_minibot/blob/master/document/HyphaROS_MiniBot_photo.jpg)  
 
 ## About us
 FB Page: https://www.facebook.com/HyphaROS/  
