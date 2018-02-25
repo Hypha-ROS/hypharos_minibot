@@ -71,20 +71,15 @@ $ catkin_make
 
 ## Operation
 ### Ethernet Connection
-The default static eth IP on Pi3 image is 10.0.0.1,  
-hence, to connect to your Pi3 through cable, please  
-set your host IP as 10.0.0.X  
-Notice: for the first bootup, you have to update Pi3  
-MAC address through HDMI Dispaly!  
+The default static eth IP on Pi3 image is 10.0.0.1, hence, to connect to your Pi3 through cable, please set your host IP as 10.0.0.X  
+Notice: for the first bootup, you have to update Pi3 MAC address through HDMI Dispaly!  
 
 ### Wifi Connection
-Use ethernet or display connection to make Pi3 connect  
-to your local Wifi AP. Remember to set ROS_MASTER_URI   
-and ROS_IP in .bashrc file in Pi3 image home folder.    
+Use ethernet or display connection to make Pi3 connect to your local Wifi AP. Remember to set ROS_MASTER_URI and ROS_IP in .bashrc file in Pi3 image home folder.    
 
 ### Mapping
 $ roslaunch hypharos_minibot HyphaROS_MiniBot_Gmapping.launch  
-OR
+OR  
 $ roslaunch hypharos_minibot HyphaROS_MiniBot_ICP.launch  
 
 ### Navigation
