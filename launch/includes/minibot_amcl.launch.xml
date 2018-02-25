@@ -27,6 +27,7 @@
         <param name="laser_lambda_short" value="0.1"/>
         <param name="laser_min_range" value="0.2"/>
         <param name="laser_max_range" value="5.0"/>
+
         <param name="laser_max_beams" value="100"/>
         <param name="laser_model_type" value="likelihood_field"/>
         <param name="laser_likelihood_max_dist" value="2.0"/>

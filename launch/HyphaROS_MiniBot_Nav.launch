@@ -20,6 +20,7 @@
     <arg name="init_x" default="0.0" />
     <arg name="init_y" default="0.0" />
     <arg name="init_a" default="0.0" />
+    <arg name="improved_amcl" default="false" />
 
 
     <!-- ********************** -->
@@ -43,12 +44,21 @@
     <node name="map_server_nav" pkg="map_server" type="map_server" args="$(find hypharos_minibot)/map/map_nav.yaml"/>
 
     <!-- amcl -->
-    <include file="$(find hypharos_minibot)/launch/includes/minibot_amcl.launch.xml">
-        <arg name="init_x" value="$(arg init_x)"/>
-        <arg name="init_y" value="$(arg init_y)"/>
-        <arg name="init_a" value="$(arg init_a)"/>
-    </include>
+    <group unless="$(arg improved_amcl)">
+        <include file="$(find hypharos_minibot)/launch/includes/minibot_amcl.launch.xml">
+            <arg name="init_x" value="$(arg init_x)"/>
+            <arg name="init_y" value="$(arg init_y)"/>
+            <arg name="init_a" value="$(arg init_a)"/>
+        </include>
+    </group>
 
+    <group if="$(arg improved_amcl)">
+        <include file="$(find hypharos_minibot)/launch/includes/minibot_amcl_improved.launch.xml">
+            <arg name="init_x" value="$(arg init_x)"/>
+            <arg name="init_y" value="$(arg init_y)"/>
+            <arg name="init_a" value="$(arg init_a)"/>
+        </include>
+    </group>
 
     <!-- ********************** -->
     <!-- Navigation (move_base) -->

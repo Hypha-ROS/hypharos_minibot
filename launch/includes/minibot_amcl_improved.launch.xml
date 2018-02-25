@@ -4,6 +4,7 @@
     <arg name="init_x" default="0" />
     <arg name="init_y" default="0" />
     <arg name="init_a" default="0" />
+    <remap from="map" to="map_amcl"/>
 
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
         <!-- Publish scans from best pose at a max of 10 Hz -->
