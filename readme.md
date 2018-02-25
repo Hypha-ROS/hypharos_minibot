@@ -51,6 +51,10 @@ SSH to Pi3, then open a terminal:
 $ sudo apt install python-smbus  
 $ pip install mpu6050-raspberrypi  
 
+### STM32 (MCU)
+Source codes:  
+https://drive.google.com/open?id=1z23aPRuJG_kKNjz_r2F5IR9BjfxCcwzN  
+
 ### Desktop Windows 
 VirtualBox Image (password: hypharos)：  
 https://drive.google.com/open?id=1xTVsPet6WT48Psete6iIkgg-gi1QdOht  
