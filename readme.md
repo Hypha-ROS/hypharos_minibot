@@ -14,7 +14,7 @@ Contact: hypha.ros@gmail.com
 Developer:   
 * HaoChih, LIN  
 
-Date: 2018/02/18  
+Date: 2018/02/25  
 License: Apache 2.0  
 
 ## Features
@@ -28,6 +28,10 @@ License: Apache 2.0
 * ROS 2.0 Multi-robots
 * Video tutorial  
 
+## Workshop slides
+HyphaROS 1 day workshop for ROS beginner:  
+https://drive.google.com/open?id=1c4hmHLAmqBQ6BlPqjn0Ndqc4kjcha3j_QZMlMWGZYFE  
+
 ## Hardware 
 * Raspberry Pi3
 * YDLidar X4
@@ -38,12 +42,18 @@ Total Cost: < 300 USD
 
 ## Software
 ### Pi3 Image
-Image file for Pi3.(with SD card >=16G)  
-[Google drive] will be released soon  
+Image file for Pi3.(with SD card >=16G, password: hypharos)  
+https://drive.google.com/open?id=1-NZauyT0wLD0a3Mp9MlN0UARfNNBmxcU  
+(if your SD card is around 13GB, it's OK to force Win32DiskImager to write the file!)   
+
+### For mpu6050
+SSH to Pi3, then open a terminal:  
+$ sudo apt install python-smbus  
+$ pip install mpu6050-raspberrypi  
 
 ### Desktop Windows 
-VirtualBox Image：  
-will be released soon  
+VirtualBox Image (password: hypharos)：  
+https://drive.google.com/open?id=1xTVsPet6WT48Psete6iIkgg-gi1QdOht  
 
 ### Desktop Ubuntu (16.04) 
 64bit RAM > 4G  
@@ -59,4 +69,26 @@ $ git clone https://github.com/Hypha-ROS/hypharos-minibot
 $ cd ..  
 $ catkin_make  
 
+## Operation
+### Ethernet Connection
+The default static eth IP on Pi3 image is 10.0.0.1,  
+hence, to connect to your Pi3 through cable, please  
+set your host IP as 10.0.0.X  
+Notice: for the first bootup, you have to update Pi3  
+MAC address through HDMI Dispaly!  
+
+### Wifi Connection
+Use ethernet or display connection to make Pi3 connect  
+to your local Wifi AP. Remember to set ROS_MASTER_URI   
+and ROS_IP in .bashrc file in Pi3 image home folder.    
+
+### Mapping
+$ roslaunch hypharos_minibot HyphaROS_MiniBot_Gmapping.launch  
+OR
+$ roslaunch hypharos_minibot HyphaROS_MiniBot_ICP.launch  
+
+### Navigation
+After mapping and modify two maps file (one for amcl, one for  
+nav) in map folder located in hypharos pkg, execute the command:  
+$ roslaunch hypharos_minibot HyphaROS_MiniBot_Nav.launch  
 
