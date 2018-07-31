@@ -69,7 +69,7 @@ create your own catkin_ws
 (http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment#Create_a_ROS_Workspace)  
 $ cd catkin_ws/src  
 $ git clone https://github.com/EAIBOT/ydlidar  
-$ git clone https://github.com/Hypha-ROS/hypharos-minibot   
+$ git clone https://github.com/Hypha-ROS/hypharos_minibot   
 $ cd ..  
 $ catkin_make  
 
