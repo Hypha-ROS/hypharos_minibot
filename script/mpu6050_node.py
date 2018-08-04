@@ -31,7 +31,7 @@ class IMUNode:
         self.imu_i2c = rospy.get_param('~imu_i2c', '0x68') # I2C device No
         self.imu_link = rospy.get_param('~imu_link', 'imu_link') # imu_link name
         self.pub_freq = float( rospy.get_param('~pub_freq', '50') ) # hz of imu pub
-
+        
         self.imuMsg = Imu()
         # Orientation covariance matrix:
         for i in range(9):
@@ -100,6 +100,9 @@ class IMUNode:
         #I2C Serial read & publish 
         try:           
             gyro_data = self.sensor.get_gyro_data()
+            accel_data = self.sensor.get_accel_data()
+
+            """            
             self.yaw_rad = -( float(gyro_data['z']) - self.vyaw_bias )*self.dt + self.yaw_rad
             if (self.yaw_rad < -math.pi):
                 self.yaw_rad += 2*math.pi
@@ -108,17 +111,26 @@ class IMUNode:
             self.time_curr = rospy.Time.now()
             self.dt = (self.time_curr - self.time_prev).to_sec();
             self.time_prev = self.time_curr
-            print gyro_data['z']
+            #print gyro_data['z']
            
             q = quaternion_from_euler(0,0,self.yaw_rad)
             self.imuMsg.orientation.x = q[0]
             self.imuMsg.orientation.y = q[1]
             self.imuMsg.orientation.z = q[2]
             self.imuMsg.orientation.w = q[3]
+            """
+
+            # Publish imu raw data
             self.imuMsg.header.stamp= self.time_curr
             self.imuMsg.header.frame_id = self.imu_link
             self.imuMsg.header.seq = self.seq
             self.seq = self.seq + 1
+            self.imuMsg.angular_velocity.x = float(gyro_data['x'])
+            self.imuMsg.angular_velocity.y = float(gyro_data['y'])
+            self.imuMsg.angular_velocity.z = float(gyro_data['z'])
+            self.imuMsg.linear_acceleration.x = float(accel_data['x'])
+            self.imuMsg.linear_acceleration.y = float(accel_data['y'])
+            self.imuMsg.linear_acceleration.z = float(accel_data['z'])
             self.pub.publish(self.imuMsg)
    
         except: 
