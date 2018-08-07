@@ -20,39 +20,16 @@ import sys
 import math
 from mpu6050 import mpu6050
 from sensor_msgs.msg import Imu
-from tf.transformations import quaternion_from_euler
 
 class IMUNode:
     def __init__(self):
         # ROS Parameters:
-        self.ori_cov = rospy.get_param('~ori_cov', '0.0025') # Orientation covariance
-        self.vel_cov = rospy.get_param('~vel_cov', '0.02') # Angular velocity covariance
-        self.acc_cov = rospy.get_param('~acc_cov', '0.04') # Linear acceleration covariance
+        self.ori_cov = float(rospy.get_param('~ori_cov', '0.0025') ) # Orientation covariance
+        self.vel_cov = float(rospy.get_param('~vel_cov', '0.02') ) # Angular velocity covariance
+        self.acc_cov = float(rospy.get_param('~acc_cov', '0.04') ) # Linear acceleration covariance
         self.imu_i2c = rospy.get_param('~imu_i2c', '0x68') # I2C device No
         self.imu_link = rospy.get_param('~imu_link', 'imu_link') # imu_link name
         self.pub_freq = float( rospy.get_param('~pub_freq', '50') ) # hz of imu pub
-        
-        self.imuMsg = Imu()
-        # Orientation covariance matrix:
-        for i in range(9):
-            self.imuMsg.orientation_covariance[i] = 0.0
-        self.imuMsg.orientation_covariance[0] = self.ori_cov
-        self.imuMsg.orientation_covariance[4] = self.ori_cov
-        self.imuMsg.orientation_covariance[8] = self.ori_cov
-
-        # Angular velocity covariance matrix:
-        for i in range(9):
-            self.imuMsg.angular_velocity_covariance[i] = 0.0
-        self.imuMsg.angular_velocity_covariance[0] = self.vel_cov
-        self.imuMsg.angular_velocity_covariance[4] = self.vel_cov
-        self.imuMsg.angular_velocity_covariance[8] = self.vel_cov
-
-        # Linear acceleration covariance matrix:
-        for i in range(9):
-            self.imuMsg.linear_acceleration_covariance[i] = 0.0
-        self.imuMsg.linear_acceleration_covariance[0] = self.acc_cov
-        self.imuMsg.linear_acceleration_covariance[4] = self.acc_cov
-        self.imuMsg.linear_acceleration_covariance[8] = self.acc_cov
                 
         # I2C Communication:
         try:
@@ -68,73 +45,38 @@ class IMUNode:
             sys.exit(0) 
         rospy.loginfo("Communication success !")
 
-        # Auto yaw-calibration:
-        rospy.loginfo("Auto yaw calibration...")
-        count = 0.0
-        vyaw_sum = 0.0
-        yaw_rad = 0.0
-        for x in range(0, 300):
-            try:
-                gyro_data = self.sensor.get_gyro_data()
-                vyaw_sum = vyaw_sum + float(gyro_data['z'])
-                count = count + 1.0
-            except:
-	            rospy.logwarn("Error in Sensor values")
-	            pass
-
-        self.vyaw_bias = float(vyaw_sum/count)
-        rospy.loginfo("Bias of Vyaw is(rad): %f", self.vyaw_bias)
-
         # ROS handler        
-        self.pub = rospy.Publisher('/imu_data', Imu, queue_size=1)   
+        self.pub = rospy.Publisher('imu_data', Imu, queue_size=1)   
         self.timer_pub = rospy.Timer(rospy.Duration(1.0/self.pub_freq), self.timerCB) 
 
-        # Variables
-        self.yaw_rad = 0
-        self.seq = 0
-        self.dt = 0
-        self.time_curr = rospy.Time.now()
-        self.time_prev = self.time_curr
-    
     def timerCB(self, event):    
         #I2C Serial read & publish 
         try:           
             gyro_data = self.sensor.get_gyro_data()
             accel_data = self.sensor.get_accel_data()
 
-            """            
-            self.yaw_rad = -( float(gyro_data['z']) - self.vyaw_bias )*self.dt + self.yaw_rad
-            if (self.yaw_rad < -math.pi):
-                self.yaw_rad += 2*math.pi
-            if (self.yaw_rad > math.pi):
-                self.yaw_rad -= 2*math.pi
-            self.time_curr = rospy.Time.now()
-            self.dt = (self.time_curr - self.time_prev).to_sec();
-            self.time_prev = self.time_curr
-            #print gyro_data['z']
-           
-            q = quaternion_from_euler(0,0,self.yaw_rad)
-            self.imuMsg.orientation.x = q[0]
-            self.imuMsg.orientation.y = q[1]
-            self.imuMsg.orientation.z = q[2]
-            self.imuMsg.orientation.w = q[3]
-            """
-
             # Publish imu raw data
-            self.imuMsg.header.stamp= self.time_curr
-            self.imuMsg.header.frame_id = self.imu_link
-            self.imuMsg.header.seq = self.seq
-            self.seq = self.seq + 1
-            self.imuMsg.angular_velocity.x = float(gyro_data['x'])
-            self.imuMsg.angular_velocity.y = float(gyro_data['y'])
-            self.imuMsg.angular_velocity.z = float(gyro_data['z'])
-            self.imuMsg.linear_acceleration.x = float(accel_data['x'])
-            self.imuMsg.linear_acceleration.y = float(accel_data['y'])
-            self.imuMsg.linear_acceleration.z = float(accel_data['z'])
-            self.pub.publish(self.imuMsg)
-   
+            imuMsg = Imu()
+            imuMsg.header.stamp= rospy.Time.now()
+            imuMsg.header.frame_id = self.imu_link
+            imuMsg.orientation_covariance[0] = self.ori_cov
+            imuMsg.orientation_covariance[4] = self.ori_cov
+            imuMsg.orientation_covariance[8] = self.ori_cov
+            imuMsg.angular_velocity_covariance[0] = self.vel_cov
+            imuMsg.angular_velocity_covariance[4] = self.vel_cov
+            imuMsg.angular_velocity_covariance[8] = self.vel_cov
+            imuMsg.linear_acceleration_covariance[0] = self.acc_cov
+            imuMsg.linear_acceleration_covariance[4] = self.acc_cov
+            imuMsg.linear_acceleration_covariance[8] = self.acc_cov
+            imuMsg.angular_velocity.x = float(gyro_data['x'])
+            imuMsg.angular_velocity.y = float(gyro_data['y'])
+            imuMsg.angular_velocity.z = float(gyro_data['z'])
+            imuMsg.linear_acceleration.x = float(accel_data['x'])
+            imuMsg.linear_acceleration.y = float(accel_data['y'])
+            imuMsg.linear_acceleration.z = float(accel_data['z'])
+            self.pub.publish(imuMsg)
         except: 
-            rospy.loginfo("Error in sensor value !") 
+            rospy.loginfo("Error in sensor value !") 	          
             pass            
         
 if __name__ == "__main__":

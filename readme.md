@@ -49,7 +49,7 @@ https://drive.google.com/open?id=1-NZauyT0wLD0a3Mp9MlN0UARfNNBmxcU
 ### For mpu6050
 SSH to Pi3, then open a terminal:  
 $ sudo apt install python-smbus  
-$ pip install mpu6050-raspberrypi  
+$ sudo pip install mpu6050-raspberrypi  
 
 ### STM32 (MCU)
 Source codes:  
