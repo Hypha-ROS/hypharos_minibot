@@ -23,6 +23,7 @@ import serial
 import string
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
+import struct
 
 class BaseControl:
     def __init__(self):
@@ -31,7 +32,7 @@ class BaseControl:
         self.odomId = rospy.get_param('~odom_id', 'odom') # odom link
         self.device_port = rospy.get_param('~port', '/dev/stm32base') # device port
         self.baudrate = float( rospy.get_param('~baudrate', '115200') ) # baudrate
-        self.odom_freq = float( rospy.get_param('~odom_freq', '50') ) # hz of odom pub
+        self.odom_freq = float( rospy.get_param('~odom_freq', '20') ) # hz of odom pub
         self.wheelSep = float( rospy.get_param('~wheel_separation', '0.158') ) # unit: meter 
         self.wheelRad = float( rospy.get_param('~wheel_radius', '0.032') ) # unit: meter
         self.VxCov = float( rospy.get_param('~vx_cov', '1.0') ) # covariance for Vx measurement
@@ -43,8 +44,8 @@ class BaseControl:
         # Serial Communication
         try:
             self.serial = serial.Serial(self.device_port, self.baudrate, timeout=10)
-            rospy.loginfo("Flusing first 50 data readings ...")
-            for x in range(0, 50):
+            rospy.loginfo("Flusing first 10 data readings ...")
+            for x in range(0, 10):
                 data = self.serial.read()
                 time.sleep(0.01)
 
@@ -75,9 +76,20 @@ class BaseControl:
 
         # reading loop 
         while True:         
-            reading = self.serial.read(6)
-            if int(reading[0].encode('hex'),16) == 255 and int(reading[1].encode('hex'),16) == 254:
-                self.data = reading
+            reading = self.serial.read(1)
+            if reading == '0x53':
+                functioon_code = self.serial.read(1)
+                if functioon_code == '0x42':        #'B'
+                    serial_buf = self.serial.read(5)
+                    if serial_buf[4] == '0x45':      #'E'
+                        self.batt_fb = serial_buf
+                        print 'Batt fb'
+
+                if functioon_code == '0x56':        #'V'
+                    serial_buf = self.serial.read(13)
+                    if serial_buf[12] == '0x45':      #'E'
+                        self.vel_fb = serial_buf
+                        print 'vel fb'
             else:
                 self.serial.read(1)
 
@@ -88,17 +100,14 @@ class BaseControl:
     def timerOdomCB(self, event):
         # Serial read & publish 
         try:           
-            data = self.data            
-            # Normal mode            
-            if len(data) == 6:
-                WL = float( (int(data[2].encode('hex'),16)*256 + int(data[3].encode('hex'),16) -500)*100.0/1560.0*2*math.pi ) # unit: rad/sec
-                WR = float( (int(data[4].encode('hex'),16)*256 + int(data[5].encode('hex'),16) -500)*100.0/1560.0*2*math.pi )
+            vel_fb = self.vel_fb
+            if len(vel_fb) == 13:
+                VR = float(struct.unpack('f', vel_fb[0:3])[0])    #unit: m/s
+                VL = float(struct.unpack('f', vel_fb[4:7])[0])
+                gyro_z = float(struct.unpack('f', vel_fb[8:11])[0])    #unit: degree/s
             else:
-                print 'Error Value! header1: ' + str(int(data[0].encode('hex'),16)) + ', header2: ' + str(int(data[1].encode('hex'),16))          
+                print 'vel_fb Error!'
 
-            # Twist
-            VL = WL * self.wheelRad # V = omega * radius, unit: m/s
-            VR = WR * self.wheelRad
             Vyaw = (VR-VL)/self.wheelSep
             Vx = (VR+VL)/2.0
 
@@ -155,23 +164,27 @@ class BaseControl:
         # send cmd to motor
         WR = (self.trans_x + self.wheelSep/2.0*self.rotat_z)/self.wheelRad; # unit: rad/sec
         WL = (self.trans_x - self.wheelSep/2.0*self.rotat_z)/self.wheelRad;        
-        self.WR_send = int(WR/100.0*1560.0/2/math.pi)
-        self.WL_send = int(WL/100.0*1560.0/2/math.pi)
-        R_forward = 1 # 0: reverse, >0: forward  
-        L_forward = 1 # 0: reverse, >0: forward       
-        if self.WR_send < 0:
-            R_forward = 0
-            self.WR_send = -self.WR_send
-        if self.WL_send < 0:
-            L_forward = 0
-            self.WL_send = -self.WL_send
-        if self.WR_send > 255:
-            self.WR_send = 255
-        if self.WL_send > 255:
-            self.WL_send = 255
 
-        output = chr(255) + chr(254) + chr(self.WL_send) + chr(L_forward) + chr(self.WR_send) + chr(R_forward)   
-        #print output     
+
+        self.WR_send = WR * self.wheelRad # unit: m/sec
+        self.WL_send = WL * self.wheelRad
+        WR_send_ba = bytearray(struct.pack("f", self.WR_send))  
+        WL_send_ba = bytearray(struct.pack("f", self.WL_send))  
+        # R_forward = 1 # 0: reverse, >0: forward  
+        # L_forward = 1 # 0: reverse, >0: forward       
+        # if self.WR_send < 0:
+        #     R_forward = 0
+        #     self.WR_send = -self.WR_send
+        # if self.WL_send < 0:
+        #     L_forward = 0
+        #     self.WL_send = -self.WL_send
+        # if self.WR_send > 255:
+        #     self.WR_send = 255
+        # if self.WL_send > 255:
+        #     self.WL_send = 255
+        output = [chr(83), chr(86), chr(WR_send_ba[0]), chr(WR_send_ba[1]), chr(WR_send_ba[2]), chr(WR_send_ba[3]), chr(WL_send_ba[0]), chr(WL_send_ba[1]), chr(WL_send_ba[2]), chr(WL_send_ba[3]), chr(69)]
+        # output = '0x53' + chr(254) + chr(self.WL_send) + chr(L_forward) + chr(self.WR_send) + chr(R_forward)   
+        # print output
         self.serial.write(output)
         
 if __name__ == "__main__":
