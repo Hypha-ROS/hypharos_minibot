@@ -44,10 +44,11 @@ class BaseControl:
         # Serial Communication
         try:
             self.serial = serial.Serial(self.device_port, self.baudrate, timeout=10)
-            rospy.loginfo("Flusing first 10 data readings ...")
-            for x in range(0, 10):
-                data = self.serial.read()
-                time.sleep(0.01)
+            time.sleep(1)
+            # rospy.loginfo("Flusing first 10 data readings ...")
+            # for x in range(0, 10):
+            #     data = self.serial.read()
+            #     time.sleep(0.01)
 
         except serial.serialutil.SerialException:
             rospy.logerr("Can not receive data from the port: "+ self.device_port + 
@@ -75,23 +76,25 @@ class BaseControl:
         self.pose_yaw = 0.0
 
         # reading loop 
-        while True:         
+        while True:        
             reading = self.serial.read(1)
-            if reading == '0x53':
+            if reading == 'S':
                 functioon_code = self.serial.read(1)
-                if functioon_code == '0x42':        #'B'
+                # rospy.loginfo(functioon_code)
+                if functioon_code == 'B':        #'B'
                     serial_buf = self.serial.read(5)
-                    if serial_buf[4] == '0x45':      #'E'
+                    if serial_buf[4] == 'E':      #'E'
                         self.batt_fb = serial_buf
-                        print 'Batt fb'
+                        # print 'Batt fb'
 
-                if functioon_code == '0x56':        #'V'
+                if functioon_code == 'V':        #'V'
                     serial_buf = self.serial.read(13)
-                    if serial_buf[12] == '0x45':      #'E'
+                    if serial_buf[12] == 'E':      #'E'
                         self.vel_fb = serial_buf
-                        print 'vel fb'
+                        # print 'vel fb'
             else:
                 self.serial.read(1)
+                
 
     def cmdCB(self, data):
         self.trans_x = data.linear.x
@@ -99,13 +102,24 @@ class BaseControl:
     
     def timerOdomCB(self, event):
         # Serial read & publish 
-        try:           
+        try:       
+            # rospy.loginfo("timerOdomCB start !")    
             vel_fb = self.vel_fb
             if len(vel_fb) == 13:
-                VR = float(struct.unpack('f', vel_fb[0:3])[0])    #unit: m/s
-                VL = float(struct.unpack('f', vel_fb[4:7])[0])
-                gyro_z = float(struct.unpack('f', vel_fb[8:11])[0])    #unit: degree/s
+                # rospy.loginfo(vel_fb[12])
+                # rospy.loginfo(struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[0:4]]))[0])
+                VR = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[0:4]]))[0]    #unit: m/s
+                if math.fabs(VR) < 0.01:
+                    VR = 0.0
+                VL = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[4:8]]))[0]
+                if math.fabs(VL) < 0.01:
+                    VL = 0.0
+                gyro_z = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[8:12]]))[0]    #unit: degree/s
+                if math.fabs(gyro_z) < 0.01:
+                    gyro_z = 0.0
+                # rospy.loginfo("FB VR:" + str(VR) + "VL:" + str(VL) + "gyro_z:" + str(gyro_z))
             else:
+                rospy.loginfo("vel_fb Error! !")
                 print 'vel_fb Error!'
 
             Vyaw = (VR-VL)/self.wheelSep
@@ -157,7 +171,7 @@ class BaseControl:
                     rospy.loginfo("[Debug] header_1:%4d, header_2:%4d, tx_1:%4d, tx_2:%4d, tx_3:%4d, tx_4:%4d", header_1, header_2, tx_1, tx_2, tx_3, tx_4 )
             
         except: 
-            #rospy.loginfo("Error in sensor value !") 
+            rospy.loginfo("Error in sensor value !") 
             pass            
 
     def timerCmdCB(self, event):
@@ -186,6 +200,7 @@ class BaseControl:
         # output = '0x53' + chr(254) + chr(self.WL_send) + chr(L_forward) + chr(self.WR_send) + chr(R_forward)   
         # print output
         self.serial.write(output)
+        # rospy.loginfo("timerCmdCB success !")
         
 if __name__ == "__main__":
     try:    
