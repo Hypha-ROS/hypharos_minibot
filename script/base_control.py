@@ -32,7 +32,7 @@ class BaseControl:
         self.odomId = rospy.get_param('~odom_id', 'odom') # odom link
         self.device_port = rospy.get_param('~port', '/dev/stm32base') # device port
         self.baudrate = float( rospy.get_param('~baudrate', '115200') ) # baudrate
-        self.odom_freq = float( rospy.get_param('~odom_freq', '20') ) # hz of odom pub
+        self.odom_freq = float( rospy.get_param('~odom_freq', '10') ) # hz of odom pub
         self.wheelSep = float( rospy.get_param('~wheel_separation', '0.158') ) # unit: meter 
         self.wheelRad = float( rospy.get_param('~wheel_radius', '0.032') ) # unit: meter
         self.VxCov = float( rospy.get_param('~vx_cov', '1.0') ) # covariance for Vx measurement
@@ -107,14 +107,16 @@ class BaseControl:
             vel_fb = self.vel_fb
             if len(vel_fb) == 13:
                 # rospy.loginfo(vel_fb[12])
-                # rospy.loginfo(struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[0:4]]))[0])
-                VR = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[0:4]]))[0]    #unit: m/s
+                # rospy.loginfo(struct.unpack('f',vel_fb[0:4])[0])
+                # rospy.loginfo(vel_fb[0:4] + ',' + vel_fb[4:8] + ',' + vel_fb[8:12])
+                # VR = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[0:4]]))[0]    #unit: m/s
+                VR = struct.unpack('f',vel_fb[0:4])[0]    #unit: m/s
                 if math.fabs(VR) < 0.01:
                     VR = 0.0
-                VL = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[4:8]]))[0]
+                VL = struct.unpack('f',vel_fb[4:8])[0]
                 if math.fabs(VL) < 0.01:
                     VL = 0.0
-                gyro_z = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[8:12]]))[0]    #unit: degree/s
+                gyro_z = struct.unpack('f',vel_fb[8:12])[0]    #unit: degree/s
                 if math.fabs(gyro_z) < 0.01:
                     gyro_z = 0.0
                 # rospy.loginfo("FB VR:" + str(VR) + "VL:" + str(VL) + "gyro_z:" + str(gyro_z))
@@ -154,10 +156,12 @@ class BaseControl:
             msg.twist.covariance[35] = self.VyawCov
             msg.pose.covariance = msg.twist.covariance
             self.pub.publish(msg)
+            
 
             # TF Broadcaster
             if self.pub_tf:
-                self.tf_broadcaster.sendTransform( (self.pose_x, self.pose_y, 0.0), pose_quat, self.current_time, self.baseId, self.odomId)          
+                self.tf_broadcaster.sendTransform( (self.pose_x, self.pose_y, 0.0), pose_quat, self.current_time, self.baseId, self.odomId)
+                     
 
             # Debug mode                      
             if self.debug_mode: 
@@ -170,8 +174,8 @@ class BaseControl:
                     tx_4 = int(data[5].encode('hex'),16) 
                     rospy.loginfo("[Debug] header_1:%4d, header_2:%4d, tx_1:%4d, tx_2:%4d, tx_3:%4d, tx_4:%4d", header_1, header_2, tx_1, tx_2, tx_3, tx_4 )
             
-        except: 
-            rospy.loginfo("Error in sensor value !") 
+        except BaseException as e: 
+            rospy.loginfo("Error in sensor value !"+ str(e))
             pass            
 
     def timerCmdCB(self, event):
@@ -199,8 +203,9 @@ class BaseControl:
         output = [chr(83), chr(86), chr(WR_send_ba[0]), chr(WR_send_ba[1]), chr(WR_send_ba[2]), chr(WR_send_ba[3]), chr(WL_send_ba[0]), chr(WL_send_ba[1]), chr(WL_send_ba[2]), chr(WL_send_ba[3]), chr(69)]
         # output = '0x53' + chr(254) + chr(self.WL_send) + chr(L_forward) + chr(self.WR_send) + chr(R_forward)   
         # print output
+        # rospy.loginfo(output)
         self.serial.write(output)
-        # rospy.loginfo("timerCmdCB success !")
+        rospy.loginfo("timerCmdCB success !")
         
 if __name__ == "__main__":
     try:    
