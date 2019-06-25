@@ -125,7 +125,7 @@ class BaseControl:
                 print 'vel_fb Error!'
 
             Vyaw = (VR-VL)/self.wheelSep
-            Vx = (VR+VL)/2.0
+            Vx = -(VR+VL)/2.0
 
             # Pose
             self.current_time = rospy.Time.now()
@@ -205,7 +205,7 @@ class BaseControl:
         # print output
         # rospy.loginfo(output)
         self.serial.write(output)
-        rospy.loginfo("timerCmdCB success !")
+        # rospy.loginfo("timerCmdCB success !")
         
 if __name__ == "__main__":
     try:    
