@@ -33,7 +33,7 @@ class BaseControl:
         self.device_port = rospy.get_param('~port', '/dev/stm32base') # device port
         self.baudrate = float( rospy.get_param('~baudrate', '115200') ) # baudrate
         self.odom_freq = float( rospy.get_param('~odom_freq', '10') ) # hz of odom pub
-        self.wheelSep = float( rospy.get_param('~wheel_separation', '0.158') ) # unit: meter 
+        self.wheelSep = float( rospy.get_param('~wheel_separation', '0.158') ) # unit: meter ,default = 0.158
         self.wheelRad = float( rospy.get_param('~wheel_radius', '0.032') ) # unit: meter
         self.VxCov = float( rospy.get_param('~vx_cov', '1.0') ) # covariance for Vx measurement
         self.VyawCov = float( rospy.get_param('~vyaw_cov', '1.0') ) # covariance for Vyaw measurement
@@ -106,11 +106,12 @@ class BaseControl:
             # rospy.loginfo("timerOdomCB start !")    
             vel_fb = self.vel_fb
             if len(vel_fb) == 13:
+                # rospy.loginfo(''.join([hex(ord(x))[2:] for x in vel_fb]))
                 # rospy.loginfo(vel_fb[12])
                 # rospy.loginfo(struct.unpack('f',vel_fb[0:4])[0])
                 # rospy.loginfo(vel_fb[0:4] + ',' + vel_fb[4:8] + ',' + vel_fb[8:12])
                 # VR = struct.unpack('f',''.join([hex(ord(x))[2:] for x in vel_fb[0:4]]))[0]    #unit: m/s
-                VR = struct.unpack('f',vel_fb[0:4])[0]    #unit: m/s
+                VR = struct.unpack('f',vel_fb[0:4])[0]    #unit: rad/s
                 if math.fabs(VR) < 0.01:
                     VR = 0.0
                 VL = struct.unpack('f',vel_fb[4:8])[0]
@@ -119,13 +120,16 @@ class BaseControl:
                 gyro_z = struct.unpack('f',vel_fb[8:12])[0]    #unit: degree/s
                 if math.fabs(gyro_z) < 0.01:
                     gyro_z = 0.0
-                # rospy.loginfo("FB VR:" + str(VR) + "VL:" + str(VL) + "gyro_z:" + str(gyro_z))
+                # rospy.loginfo("FB WR:" + str(VR) + "WL:" + str(VL) + "gyro_z:" + str(gyro_z))
             else:
                 rospy.loginfo("vel_fb Error! !")
                 print 'vel_fb Error!'
-
+            
+            VR = VR * self.wheelRad # V = omega * radius, unit: m/s
+            VL = VL * self.wheelRad 
+            
             Vyaw = (VR-VL)/self.wheelSep
-            Vx = -(VR+VL)/2.0
+            Vx = (VR+VL)/2.0
 
             # Pose
             self.current_time = rospy.Time.now()
@@ -184,8 +188,9 @@ class BaseControl:
         WL = (self.trans_x - self.wheelSep/2.0*self.rotat_z)/self.wheelRad;        
 
 
-        self.WR_send = WR * self.wheelRad # unit: m/sec
-        self.WL_send = WL * self.wheelRad
+        self.WR_send = WR  # unit: rad/sec
+        self.WL_send = WL 
+        # rospy.loginfo("WR:" + str(WR) + "WL:" + str(WL))
         WR_send_ba = bytearray(struct.pack("f", self.WR_send))  
         WL_send_ba = bytearray(struct.pack("f", self.WL_send))  
         # R_forward = 1 # 0: reverse, >0: forward  
