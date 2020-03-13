@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- Launch file parameters -->
+    <arg name="output"           default="log" /> 
+    <!-- arg name="output"           default="screen" /--> 
+
+
+    <!-- ********************** -->
+    <!-- Boot up all components -->
+    <!-- ********************** -->
+    
+    <!-- YDLidar -->
+    <include file="$(find ydlidar_ros)/launch/lidar.launch">
+    </include>
+
+    <!-- BASE -->
+    <include file="$(find hypharos_minibot)/launch/base_control.launch">
+        <arg name="ekf" value="False" />
+    </include>
+
+    <!-- gmapping -->
+    <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="$(arg output)">
+        <remap from="scan" to="scan"/>
+        <rosparam file="$(find hypharos_minibot)/param/gmapping/gmapping_params.yaml" command="load"/>
+
+    </node>
+
+    <!-- ********************** -->
+    <!-- Navigation (move_base) -->
+    <!-- ********************** -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" >
+        <!-- global planner -->
+        <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+        <rosparam file="$(find hypharos_minibot)/param/planner/global_planner_params.yaml" command="load" />
+        <!-- local planner -->   
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" if="$(arg use_dwa)"/>      
+        <rosparam file="$(find hypharos_minibot)/param/planner/dwa_local_planner_params.yaml" command="load" if="$(arg use_dwa)"/>
+        <rosparam file="$(find hypharos_minibot)/param/planner/base_local_planner_params.yaml" command="load" unless="$(arg use_dwa)" />         
+        <!-- params for move_base -->
+        <param name="planner_frequency" value="0.0" />
+        <param name="controller_frequency" value="10.0" />
+        <param name="controller_patience" value="3.0" />
+        <param name="oscillation_timeout" value="10.0" />
+        <param name="oscillation_distance" value="0.05" />
+        <param name="clearing_rotation_allowed" value="false" />
+        <!-- params for costmap layers --> 
+        <rosparam file="$(find hypharos_minibot)/param/costmap/local_costmap_params.yaml" command="load"/>
+        <rosparam file="$(find hypharos_minibot)/param/costmap/global_costmap_params.yaml" command="load"/>
+    </node>
+</launch>

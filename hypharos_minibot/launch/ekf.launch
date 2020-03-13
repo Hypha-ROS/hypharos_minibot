@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<launch>
+<node pkg="robot_localization" type="ekf_localization_node" name="ekf" clear_params="true">
+    <rosparam command="load" file="$(find hypharos_minibot)/param/minibot_imu_ekf_params.yaml" /> 
+</node>
+
+<include file="$(find hypharos_minibot)/launch/base_control.launch">
+    <arg name="pub_tf"       value="False" />
+</include>
+</launch>

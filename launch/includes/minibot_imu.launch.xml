@@ -1,7 +1,0 @@
-<launch>
-    <node name="imu_auto"   pkg="hypharos_minibot"  type="mpu6050_node.py" output="screen">
-    <param name="port"       value="/dev/mpu6050"/>  
-    <param name="imu_frame"  value="imu_link"/>
-    <param name="baudrate"   value="57600"/>
-    </node>
-</launch>

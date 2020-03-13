@@ -1,0 +1,18 @@
+<launch>
+  <node name="ydlidar_node"  pkg="ydlidar_ros"  type="ydlidar_node" output="screen" respawn="false" >
+    <param name="port"         type="string" value="/dev/ydlidar"/>  
+    <param name="baudrate"         type="int" value="128000"/>  
+    <param name="frame_id"     type="string" value="base_link"/>
+    <param name="resolution_fixed"    type="bool"   value="true"/>
+    <param name="auto_reconnect"    type="bool"   value="true"/>
+    <param name="reversion"    type="bool"   value="true"/>
+    <param name="angle_min"    type="double" value="-180" />
+    <param name="angle_max"    type="double" value="180" />
+    <param name="range_min"    type="double" value="0.08" />
+    <param name="range_max"    type="double" value="10.0" />
+    <param name="ignore_array" type="string" value="" />
+    <param name="frequency"    type="double" value="10"/>
+    <param name="isTOFLidar"    type="bool"   value="false"/>
+  </node>
+  <node pkg="tf" type="static_transform_publisher" name="base2laser_link" args="0.025 0 0.205 0 0 0 /base_link /laser_link 10"/>
+</launch>

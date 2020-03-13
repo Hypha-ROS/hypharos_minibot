@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<launch>
+    <!-- URDF -->
+    <param name="robot_description" textfile="$(find hypharos_minibot)/minibot_model/minibot.urdf" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <!-- global parameter -->
+    <arg name="wheel_separation" default="0.158" /> <!-- unit: meter -->
+    <arg name="wheel_radius"     default="0.032" /> <!-- unit: meter -->  
+    <arg name="ekf"           default="False" />
+
+    <group if="$(arg ekf)">
+        <!-- base control -->
+        <node name="base_control"   pkg="hypharos_minibot"  type="base_control.py" output="screen">
+            <param name="wheel_separation" value="$(arg wheel_separation)"/> 
+            <param name="wheel_radius"     value="$(arg wheel_radius)"/> 
+            <param name="pub_tf"           value="False"/>     <!-- publish TF or not -->
+        </node>
+        <!-- Robot_Localization -->
+        <node pkg="robot_localization" type="ekf_localization_node" name="ekf" clear_params="true">
+            <rosparam command="load" file="$(find hypharos_minibot)/param/minibot_imu_ekf_params.yaml" /> 
+        </node>
+    </group>
+
+    <group unless="$(arg ekf)">
+        <!-- base control -->
+        <node name="base_control"   pkg="hypharos_minibot"  type="base_control.py" output="screen">
+            <param name="wheel_separation" value="$(arg wheel_separation)"/> 
+            <param name="wheel_radius"     value="$(arg wheel_radius)"/> 
+            <param name="pub_tf"           value="True"/>     <!-- publish TF or not -->
+        </node>
+    </group>
+</launch>

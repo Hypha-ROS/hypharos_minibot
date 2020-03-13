@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- for amcl -->    
+    <arg name="init_x" default="0.0" />
+    <arg name="init_y" default="0.0" />
+    <arg name="init_a" default="0.0" />
+
+    <!-- ********************** -->
+    <!-- Boot up all components -->
+    <!-- ********************** -->
+    
+    <!-- YDLidar -->
+    <include file="$(find ydlidar_ros)/launch/lidar.launch">
+    </include>
+
+    <!-- BASE -->
+    <include file="$(find hypharos_minibot)/launch/base_control.launch">
+        <arg name="ekf" value="False" />
+    </include>
+
+    <!-- ************ -->
+    <!-- Localization -->
+    <!-- ************ -->
+    <!-- Map server (for amcl) -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(env HOME)/maps/123.yaml">
+        <remap from="map" to="map_amcl"/>
+    </node>
+    <!-- Map server (for nav)-->
+    <node name="map_server_nav" pkg="map_server" type="map_server" args="$(env HOME)/maps/123.yaml"/>
+   
+    <!-- AMCL -->
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <rosparam file="$(find hypharos_minibot)/param/amcl/amcl_improve_params.yaml"/>
+        <remap from="map" to="map_amcl"/>
+        <param name="initial_pose_x" value="$(arg init_x)" />
+        <param name="initial_pose_y" value="$(arg init_y)" />
+        <param name="initial_pose_a" value="$(arg init_a)" />
+    </node>
+
+    <!-- ********************** -->
+    <!-- Navigation (move_base) -->
+    <!-- ********************** -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" >
+        <!-- global planner -->
+        <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+        <rosparam file="$(find hypharos_minibot)/param/planner/global_planner_params.yaml" command="load" />
+        <!-- local planner -->   
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" if="$(arg use_dwa)"/>      
+        <rosparam file="$(find hypharos_minibot)/param/planner/dwa_local_planner_params.yaml" command="load" if="$(arg use_dwa)"/>
+        <rosparam file="$(find hypharos_minibot)/param/planner/base_local_planner_params.yaml" command="load" unless="$(arg use_dwa)" />         
+        <!-- params for move_base -->
+        <param name="planner_frequency" value="0.0" />
+        <param name="controller_frequency" value="10.0" />
+        <param name="controller_patience" value="3.0" />
+        <param name="oscillation_timeout" value="10.0" />
+        <param name="oscillation_distance" value="0.05" />
+        <param name="clearing_rotation_allowed" value="false" />
+        <!-- params for costmap layers --> 
+        <rosparam file="$(find hypharos_minibot)/param/costmap/local_costmap_params.yaml" command="load"/>
+        <rosparam file="$(find hypharos_minibot)/param/costmap/global_costmap_params.yaml" command="load"/>
+    </node>
+</launch>
